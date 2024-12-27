@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "273446768987",
+    "project_id": "treasuregame-4d8bb",
+    "storage_bucket": "treasuregame-4d8bb.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:273446768987:android:b1de092d25589e3b7f0a7e",
+        "android_client_info": {
+          "package_name": "com.game.app.treasure_game"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD0sFW4QrorlnG_QNQbki3dDs4jMMSdxZM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:273446768987:android:cc519fac4a6ad0857f0a7e",
+        "android_client_info": {
+          "package_name": "com.game.app.treasure_game"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD0sFW4QrorlnG_QNQbki3dDs4jMMSdxZM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
