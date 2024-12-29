@@ -77,9 +77,12 @@ class _payment_confirmState extends State<payment_confirm> {
         'paymentmethod': paymentMethod,
         'transactionid': transactionId,
         'gamepass': id,
+        'textIndex': 0,
         'taskscompleted': '0',
+        'islost': false,
         'enable': false,
         'payment': false,
+        'paymenterror': false,
         'timestamp': FieldValue.serverTimestamp(),
       });
       await batch.commit();

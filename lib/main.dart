@@ -56,16 +56,17 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   String username = '';
   String gamePass = '';
 
-  bool buy_enable = true;
+  bool buy_enable = false;
   bool window = false;
   bool isLoggedInVar = false;
   bool isGameOnline = false;
   bool payment = true;
   bool moveUp = true;
   bool _isKeyboardVisible = false;
-  bool joinEnable = true;
+  bool joinEnable = false;
   bool isJoined = false;
   bool gameEnded = false;
+  bool paymentError = false;
 
   int joinedplayers = 0;
 
@@ -106,6 +107,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
           joinedplayers = Data['joinedplayers'];
           gameEnded = Data['gameEnded'];
           gamecompleted = Data['gamecompleted'];
+          print(joinEnable);
           // if (!isGameOnline) {
           setLoggedIn(false);
           isLoggedIn();
@@ -134,7 +136,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       await FirebaseFirestore.instance
           .collection('MainGameData')
           .doc('gamedata')
-          .update({'joinedplayers': joinedplayers + 1})
+          .update({'players': int.parse(players) + 1})
           .then((value) => print("Data Updated"))
           .catchError((error) => print("Failed to update user: $error"));
       isLoggedIn();
@@ -144,6 +146,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   Future<Map<String, bool>> checkPassEnable(String gamepass) async {
     bool value = false;
     bool exists = false;
+    bool paymentError = false;
 
     DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
         .collection('MainUsersData')
@@ -153,16 +156,15 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       Map<String, dynamic> Data =
           documentSnapshot.data() as Map<String, dynamic>;
       bool passEnable = Data['enable'];
-      // bool payment = Data['payment'];
+      bool payment = Data['paymenterror'];
       // print(passEnable);
+      paymentError = payment;
       value = passEnable;
       exists = true;
     } else {
       print("Data not exists");
-      value = false;
-      exists = false;
     }
-    return {'value': value, 'exists': exists};
+    return {'value': value, 'exists': exists, 'paymentError': paymentError};
   }
 
   Future<bool> isLoggedIn() async {
@@ -263,40 +265,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       },
     );
   }
-
-  // Future<void> _showNoInternetDialog(BuildContext context) async {
-  //   isDialogShown = true;
-  //   return showDialog<void>(
-  //     context: context,
-  //     barrierDismissible: false, // User must tap a button to close
-  //     builder: (BuildContext context) {
-  //       return AlertDialog(
-  //         title: const Text('No Internet Connection'),
-  //         content: const SingleChildScrollView(
-  //           child: ListBody(
-  //             children: <Widget>[
-  //               Text('Please check your internet connection and try again.'),
-  //             ],
-  //           ),
-  //         ),
-  //         actions: <Widget>[
-  //           TextButton(
-  //             child: const Text('Retry'),
-  //             onPressed: () async {
-  //               final connectivityService =
-  //               Provider.of<ConnectivityService>(context, listen: false);
-  //               await connectivityService.checkInternet();
-  //               if (connectivityService.hasInternet) {
-  //                 Navigator.of(context).pop();
-  //                 isDialogShown = false;
-  //               }
-  //             },
-  //           ),
-  //         ],
-  //       );
-  //     },
-  //   );
-  // }
 
   @override
   void didChangeMetrics() {
@@ -452,6 +420,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   onTapUp: (details) async {
                     bool internet =
                         await InternetUtils.checkInternetConnection(context);
+                    print(joinEnable);
                     if (!internet) {
                       print('No Internet');
                     } else {
@@ -703,7 +672,9 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                                                           ticketFieldNo.text);
 
                                                   if (pass['exists'] == true) {
-                                                    if (pass['value'] == true) {
+                                                    if (pass['value'] == true &&
+                                                        pass['paymentError'] ==
+                                                            false) {
                                                       if (isGameOnline) {
                                                         setLoggedIn(true);
                                                         setgamepass(
@@ -726,6 +697,13 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                                                             'The game has not yet started. Be patient, it will start soon.',
                                                             80);
                                                       }
+                                                    } else if (pass[
+                                                            'paymentError'] ==
+                                                        true) {
+                                                      dialogBox(
+                                                          width,
+                                                          "There is some error with the payment",
+                                                          50);
                                                     } else {
                                                       dialogBox(
                                                           width,
@@ -789,7 +767,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                           setJoinedGame(true);
                           dialogBox(
                               width,
-                              'You are added to the list. You will be able to play the game when atleast 1000 people join the game.',
+                              'You are added to the list. You will be able to play the game when at least 1000 people join the game.',
                               80);
                         }
                       }

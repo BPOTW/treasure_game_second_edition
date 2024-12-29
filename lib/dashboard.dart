@@ -6,10 +6,8 @@ import 'dart:async';
 import 'package:treasure_game/countdown.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:treasure_game/main.dart';
-import 'utils.dart';
 import 'package:showcaseview/showcaseview.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-// import 'map.dart';
 import 'package:qr_code_scanner_plus/qr_code_scanner_plus.dart';
 
 class dashboard_app extends StatefulWidget {
@@ -78,7 +76,6 @@ class _dashboard_appState extends State<dashboard_app>
   @override
   void initState() {
     super.initState();
-
     // InternetUtils.initialize(context);
     FirebaseFirestore.instance
         .collection('MainGameData')
@@ -131,7 +128,7 @@ class _dashboard_appState extends State<dashboard_app>
         Map<String, dynamic> Data = snapshot.data() as Map<String, dynamic>;
         setState(() {
           textIndex = Data['textIndex'];
-          tasksCompleted = Data['taskscompleted'];
+          tasksCompleted = int.parse(Data['taskscompleted']);
           username = Data['userid'];
           isLost = Data['islost'];
           print('Have you lost $isLost');
@@ -253,7 +250,7 @@ class _dashboard_appState extends State<dashboard_app>
     FirebaseFirestore.instance
         .collection('MainUsersData')
         .doc(widget.gamePass)
-        .update({'taskscompleted': (tasksCompleted + 1)})
+        .update({'taskscompleted': (tasksCompleted + 1).toString()})
         .then((value) => print("Data Updated"))
         .catchError((error) => print("Failed to update user: $error"));
   }
@@ -371,7 +368,7 @@ class _dashboard_appState extends State<dashboard_app>
   @override
   Widget build(BuildContext context) {
     double keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
-    print(optionData);
+    // print(widget.gamePass);
     if (keyboardHeight == 0) {
       setState(() {
         offset = 0;
