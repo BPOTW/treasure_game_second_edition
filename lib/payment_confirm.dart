@@ -2,11 +2,12 @@
 
 import 'package:flutter/services.dart';
 import 'package:treasure_game/payment.dart';
-import 'package:treasure_game/signup.dart';
+// import 'package:treasure_game/signup.dart'; // Not directly needed if Formfield is self-contained or passed
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'main.dart';
-import 'utils.dart';
+import 'utils.dart'; // Assuming Formfield from signup.dart is not used here, or this page has its own.
+// If utils.dart contains a shared Formfield, ensure it's the one being used.
 
 class payment_confirm extends StatefulWidget {
   final String name;
@@ -19,7 +20,7 @@ class payment_confirm extends StatefulWidget {
       this.username = '',
       this.phone = '',
       this.pass = '',
-      this.paymentmethod = '',
+      this.paymentmethod = '', // Corrected: added comma
       super.key});
 
   @override
@@ -31,7 +32,10 @@ class _payment_confirmState extends State<payment_confirm> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   String idLable = 'Transaction ID';
-  MaterialColor borderColorId = Colors.amber;
+  // MaterialColor borderColorId = Colors.amber; // This can be managed by Formfield directly
+  Color borderColorId =
+      Colors.amber; // Changed to Color for consistency with Formfield
+
   String transactionId = '';
   bool _isLoading = false;
 
@@ -48,36 +52,40 @@ class _payment_confirmState extends State<payment_confirm> {
     DocumentSnapshot<Map<String, dynamic>> snapshot =
         await _firestore.collection('MainGameData').doc('gamedata').get();
 
-    if (snapshot.exists) {
-      players = int.parse(snapshot['players']);
+    if (snapshot.exists &&
+        snapshot.data() != null &&
+        snapshot.data()!['players'] != null) {
+      players = int.tryParse(snapshot.data()!['players'].toString()) ?? 0;
     } else {
-      players = 0; // Or throw an exception if the document doesn't exist
+      players = 0;
     }
-
     return players;
   }
 
   Future<bool> sendData(String id, String name, String userid, String phone,
       String paymentMethod, String transactionId) async {
+    setState(() {
+      _isLoading = true;
+    });
     try {
-      int players = await getPlayers();
+      int currentPlayers = await getPlayers();
       WriteBatch batch = _firestore.batch();
-      DocumentReference gameData =
+      DocumentReference gameDataRef = // Renamed for clarity
           _firestore.collection('MainGameData').doc('gamedata');
-      DocumentReference usersData =
+      DocumentReference userDataRef = // Renamed for clarity
           _firestore.collection('MainUsersData').doc(id);
 
-      batch.update(gameData, {
-        'players': (players + 1).toString(),
+      batch.update(gameDataRef, {
+        'players': (currentPlayers + 1).toString(),
       });
-      batch.set(usersData, {
+      batch.set(userDataRef, {
         'name': name,
         'userid': userid,
         'phone': phone,
         'paymentmethod': paymentMethod,
         'transactionid': transactionId,
         'gamepass': id,
-        'textIndex': 0,
+        'textIndex': 1,
         'taskscompleted': '0',
         'islost': false,
         'enable': false,
@@ -86,25 +94,18 @@ class _payment_confirmState extends State<payment_confirm> {
         'timestamp': FieldValue.serverTimestamp(),
       });
       await batch.commit();
-      // await _firestore.collection('MainUsersData').doc(id).set({
-      //   'name': name,
-      //   'userid': userid,
-      //   'phone': phone,
-      //   'paymentmethod': paymentMethod,
-      //   'transactionid': transactionId,
-      //   'gamepass': id,
-      //   'taskscompleted': '0',
-      //   'enable': false,
-      //   'payment': false,
-      //   'timestamp': FieldValue.serverTimestamp(),
-      // });
-      // await _firestore.collection('MainGameData').doc('gamedata').update({
-      //   'name': name,
-      // });
       print('User added successfully with ID: $id');
+      if (mounted)
+        setState(() {
+          _isLoading = false;
+        });
       return true;
     } catch (e) {
       print('Error adding user: $e');
+      if (mounted)
+        setState(() {
+          _isLoading = false;
+        });
       return false;
     }
   }
@@ -115,336 +116,451 @@ class _payment_confirmState extends State<payment_confirm> {
     super.dispose();
   }
 
+  Widget _buildStepIndicator({required bool isActive}) {
+    // Helper for step dots
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+      child: Container(
+        width: isActive ? 35 : 10, // Active dot is wider
+        height: 10,
+        decoration: BoxDecoration(
+          color: isActive ? Colors.amber : Colors.white.withOpacity(0.5),
+          borderRadius: BorderRadius.circular(5),
+          boxShadow: isActive
+              ? [
+                  BoxShadow(
+                      color: Colors.amber.withOpacity(0.5),
+                      blurRadius: 5,
+                      spreadRadius: 1)
+                ]
+              : [],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      resizeToAvoidBottomInset: false,
+      resizeToAvoidBottomInset: true,
       backgroundColor: const Color.fromARGB(255, 0, 0, 32),
       body: Stack(children: [
-        SizedBox(
-          width: width,
-          height: height,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 35.0, left: 15),
-                    child: InkWell(
+        SafeArea(
+          child: SingleChildScrollView(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                // Header Row
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    InkWell(
                         onTapUp: (details) {
-                          Navigator.push(
+                          // Navigate back to payment selection, not signup directly unless intended
+                          Navigator.pushReplacement(
                             context,
-                            MaterialPageRoute(builder: (context) => payment()),
+                            MaterialPageRoute(
+                                builder: (context) => payment(
+                                    name: widget.name,
+                                    username: widget.username,
+                                    phone: widget.phone,
+                                    pass: widget.pass)),
                           );
                         },
                         child: const Icon(
                           Icons.arrow_back,
-                          size: 25,
+                          size: 28,
                           color: Colors.white,
                         )),
-                  ),
-                  Padding(
-                    padding:
-                        EdgeInsets.only(top: 35.0, left: width - width / 1.29),
-                    child: Column(
-                      children: [
-                        const Text(
-                          "Payment",
-                          style: TextStyle(
-                              fontSize: 30,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.amber),
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.all(5),
-                              child: Container(
-                                width: 30,
-                                height: 5,
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(5),
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(5.0),
-                              child: Container(
-                                width: 30,
-                                height: 5,
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(5),
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(5.0),
-                              child: Container(
-                                width: 30,
-                                height: 5,
-                                decoration: BoxDecoration(
-                                  color: Colors.amber,
-                                  borderRadius: BorderRadius.circular(5),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(
-                    width: 75,
-                  )
-                ],
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    "Enter your transaction ID",
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500),
-                  ),
-                ],
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                      width: width - 60,
-                      child: Formfield(
-                        onTap: () {
-                          setState(() {
-                            idLable = 'Transaction ID';
-                            borderColorId = Colors.amber;
-                          });
-                        },
-                        controller: _idController,
-                        hintText: "Transaction ID",
-                        lable: idLable,
-                        borderColor: borderColorId,
-                        radius: 10,
-                        lableStyle:
-                            TextStyle(fontSize: 15, color: Colors.white),
-                      )),
-                ],
-              ),
-              SizedBox(
-                height: 10,
-              ),
-              SizedBox(
-                width: width - 60,
-                child: Text(
-                  'Note : Make sure to enter the correct transaction ID otherwise your payment might get lost.',
-                  style: TextStyle(
-                      fontSize: 11, color: Color.fromARGB(176, 171, 171, 171)),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 20, bottom: 10),
-                child: SizedBox(
-                  // width: width - 15,
-                  child: Opacity(
-                      opacity: 0.5,
-                      child: Image.asset(
-                        "assets/imgs/${widget.paymentmethod}_slip.jpeg",
-                        height: height / 2.1,
-                      )),
-                ),
-              ),
-              Expanded(
-                child: SizedBox(
-                  height: double.infinity,
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SizedBox(
-                      width: 180,
-                      height: 50,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                  10), // Adjust the radius here
-                            ),
-                            elevation: 5, // Optional: Adjust the elevation
-                            backgroundColor: Color.fromARGB(255, 226, 194, 12)),
-                        onPressed: () async {
-                          bool clear = false;
-                          if (_idController.text == '') {
-                            setState(() {
-                              idLable = 'Enter your Transaction ID';
-                              borderColorId = Colors.red;
-                            });
-                          } else {
-                            transactionId = _idController.text;
-                            setState(() {
-                              _isLoading = true;
-                            });
-                            bool send = await sendData(
-                                widget.pass,
-                                widget.name,
-                                widget.username,
-                                widget.phone,
-                                widget.paymentmethod,
-                                transactionId);
-                            setState(() {
-                              _isLoading = false;
-                            });
-                            if (!send) {
-                              final snackBar = SnackBar(
-                                content:
-                                    Text('An error occured. Please try again.'),
-                              );
-                              ScaffoldMessenger.of(context)
-                                  .showSnackBar(snackBar);
-                            } else {
-                              showDialog(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return AlertDialog(
-                                    contentPadding: const EdgeInsets.only(
-                                        bottom: 10,
-                                        top: 20,
-                                        left: 25,
-                                        right: 25),
-                                    title: Text(
-                                      'Payment',
-                                      style: TextStyle(
-                                          fontSize: 20,
-                                          color: Colors.yellow,
-                                          fontWeight: FontWeight.w500),
-                                    ),
-                                    backgroundColor:
-                                        const Color.fromARGB(255, 0, 0, 32),
-                                    content: Container(
-                                      color:
-                                          const Color.fromARGB(255, 0, 0, 32),
-                                      width: (width - 30),
-                                      height: 120,
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          SizedBox(
-                                            width: (width / 5) * 3,
-                                            child: Text(
-                                                "We appreciate your interest! Your GamePass code is ${widget.pass}. It will be ready for use after payment verification, which usually takes 12 to 24 hours.",
-                                                style: TextStyle(
-                                                    fontSize: 12,
-                                                    color: Colors.white)),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () {
-                                          Clipboard.setData(
-                                              ClipboardData(text: widget.pass));
-
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
-                                            SnackBar(
-                                              content: Text(
-                                                  'GamePass copied to clipboard!'),
-                                            ),
-                                          );
-                                        },
-                                        child: const Text(
-                                          'Copy GamePass',
-                                          style: TextStyle(
-                                              color: Colors.amber,
-                                              fontWeight: FontWeight.w500),
-                                        ),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.of(context)
-                                              .pop(); // Close the dialog
-                                          Navigator.of(context).popUntil(
-                                              (route) => route.isFirst);
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    const MyHomePage()),
-                                          );
-                                        },
-                                        child: const Text(
-                                          'Ok',
-                                          style: TextStyle(
-                                              color: Color.fromARGB(
-                                                  255, 255, 255, 255),
-                                              fontWeight: FontWeight.w500),
-                                        ),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              );
-                            }
-                          }
-                        },
-                        child: const Text(
-                          'Confirm',
-                          style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w500,
-                              color: Color.fromARGB(255, 255, 255, 255)),
-                        ),
+                    Expanded(
+                      child: Column(
+                        children: [
+                          const Text(
+                            "Confirm Payment", // Updated Title
+                            style: TextStyle(
+                                fontSize: 28,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.amber),
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              _buildStepIndicator(isActive: false),
+                              _buildStepIndicator(isActive: false),
+                              _buildStepIndicator(isActive: true),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
+                    SizedBox(width: 40), // Placeholder for balance
                   ],
                 ),
-              ),
-            ],
-          ),
-        ),
-        _isLoading
-            ? Container(
-                color: Colors.black
-                    .withOpacity(0.5), // Semi-transparent background
-                child: Center(
-                  child: Container(
-                    width: 50,
-                    height: 50,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: const Color.fromARGB(0, 255, 255, 255),
-                      borderRadius: BorderRadius.circular(8),
+                SizedBox(
+                  height: 30, // Increased spacing
+                ),
+                Text(
+                  "Enter Transaction ID", // Clearer instruction
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600),
+                ),
+                SizedBox(
+                  height: 15,
+                ),
+                // Assuming this page uses its own Formfield or one from utils.dart
+                // If it's the signup.dart Formfield, it needs to be imported or passed.
+                Formfield_confirm(
+                  // Using a distinct name for clarity if it's a local version
+                  onTap: () {
+                    setState(() {
+                      idLable = 'Transaction ID';
+                      borderColorId = Colors.amber;
+                    });
+                  },
+                  controller: _idController,
+                  hintText: "E.g., 1234567890", // Example hint
+                  lable: idLable,
+                  borderColor: borderColorId,
+                  prefixIcon: Icons.receipt_long_outlined, // Added icon
+                  keyboardType: TextInputType.number, // Set keyboard type
+                  radius: 10,
+                  lableStyle: TextStyle(
+                      fontSize: 15, color: Color.fromARGB(255, 220, 220, 220)),
+                  hintStyle: TextStyle(
+                      fontSize: 14, color: Color.fromARGB(255, 180, 180, 180)),
+                  textStyle: TextStyle(
+                      fontSize: 15,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500),
+                ),
+                SizedBox(
+                  height: 12,
+                ),
+                Text(
+                  'Note: Double-check your Transaction ID. Incorrect IDs can cause delays or issues with verification.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.white.withOpacity(0.7),
+                      fontStyle: FontStyle.italic),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 25), // Adjusted padding
+                  child: Column(
+                    children: [
+                      Text(
+                        "Example Slip (${widget.paymentmethod == 'jazzcash' ? 'JazzCash' : 'Easypaisa'}):",
+                        style: TextStyle(
+                            color: Colors.amber,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500),
+                      ),
+                      SizedBox(height: 10),
+                      Container(
+                        decoration: BoxDecoration(
+                            border: Border.all(
+                                color: Colors.amber.withOpacity(0.5), width: 1),
+                            borderRadius: BorderRadius.circular(8)),
+                        child: ClipRRect(
+                          borderRadius:
+                              BorderRadius.circular(7), // Inner clip for image
+                          child: Opacity(
+                              opacity:
+                                  0.9, // Increased opacity for better visibility
+                              child: Image.asset(
+                                "assets/imgs/${widget.paymentmethod}_slip.jpeg",
+                                height: height / 2.5, // Adjusted height
+                                fit: BoxFit
+                                    .contain, // Ensure full image is visible
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                      height: height / 2.5,
+                                      alignment: Alignment.center,
+                                      child: Text('Error loading example slip.',
+                                          style: TextStyle(
+                                              color: Colors.redAccent)));
+                                },
+                              )),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Expanded( // Removed Expanded here, SingleChildScrollView will handle height
+                //   child: SizedBox(
+                //     height: double.infinity, // This was causing issues with fixed height elements
+                //   ),
+                // ),
+                SizedBox(height: 20), // Spacing before button
+                SizedBox(
+                  width: double.infinity, // Full width button
+                  height: 50,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.amber,
+                      foregroundColor: const Color.fromARGB(255, 0, 0, 32),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      elevation: 5,
                     ),
-                    child: CircularProgressIndicator(
-                      color: Colors.amber,
+                    onPressed: _isLoading
+                        ? null
+                        : () async {
+                            bool internet =
+                                await InternetUtils.checkInternetConnection(
+                                    context);
+                            if (!internet) return;
+
+                            if (_idController.text.trim().isEmpty) {
+                              setState(() {
+                                idLable = 'Transaction ID cannot be empty';
+                                borderColorId = Colors.red;
+                              });
+                            } else {
+                              transactionId = _idController.text.trim();
+                              // setState(() { // Moved to sendData
+                              //   _isLoading = true;
+                              // });
+                              bool send = await sendData(
+                                  widget.pass,
+                                  widget.name,
+                                  widget.username,
+                                  widget.phone,
+                                  widget.paymentmethod,
+                                  transactionId);
+                              // setState(() { // Moved to sendData
+                              //   _isLoading = false;
+                              // });
+                              if (!send) {
+                                if (mounted) {
+                                  final snackBar = SnackBar(
+                                    content: Text(
+                                        'An error occurred. Please try again.',
+                                        style: TextStyle(color: Colors.white)),
+                                    backgroundColor: Colors.redAccent,
+                                  );
+                                  ScaffoldMessenger.of(context)
+                                      .showSnackBar(snackBar);
+                                }
+                              } else {
+                                if (mounted) {
+                                  showDialog(
+                                    context: context,
+                                    barrierDismissible:
+                                        false, // User must interact with dialog
+                                    builder: (BuildContext context) {
+                                      return AlertDialog(
+                                        backgroundColor: const Color.fromARGB(
+                                            255,
+                                            10,
+                                            20,
+                                            50), // Darker background
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(15)),
+                                        titlePadding: const EdgeInsets.only(
+                                            top: 25, left: 25, right: 25),
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                                horizontal: 25, vertical: 20),
+                                        actionsPadding: const EdgeInsets.only(
+                                            right: 15, bottom: 15, left: 15),
+                                        title: Text(
+                                          'Payment Submitted!', // Positive title
+                                          style: TextStyle(
+                                              fontSize: 20,
+                                              color: Colors.amber,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        content: Text(
+                                            "Thank you! Your GamePass code is ${widget.pass}. Activation may take 12-24 hours after payment verification.",
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                                fontSize: 14,
+                                                color: Colors.white70,
+                                                height: 1.5,
+                                                fontWeight: FontWeight.w400)),
+                                        actionsAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        actions: [
+                                          TextButton(
+                                              onPressed: () {
+                                                Clipboard.setData(ClipboardData(
+                                                    text: widget.pass));
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                  SnackBar(
+                                                    content: Text(
+                                                        'GamePass ${widget.pass} copied!',
+                                                        style: TextStyle(
+                                                            color:
+                                                                Colors.black)),
+                                                    backgroundColor:
+                                                        Colors.amber,
+                                                    duration:
+                                                        Duration(seconds: 2),
+                                                  ),
+                                                );
+                                              },
+                                              child: Row(
+                                                // Icon and text for copy button
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Icon(Icons.copy_all_outlined,
+                                                      color: Colors.amber,
+                                                      size: 18),
+                                                  SizedBox(width: 5),
+                                                  Text('Copy Pass',
+                                                      style: TextStyle(
+                                                          color: Colors.amber,
+                                                          fontWeight:
+                                                              FontWeight.w500)),
+                                                ],
+                                              )),
+                                          ElevatedButton(
+                                            style: ElevatedButton.styleFrom(
+                                                backgroundColor: Colors.amber,
+                                                foregroundColor: Color.fromARGB(
+                                                    255, 0, 0, 32)),
+                                            onPressed: () {
+                                              Navigator.of(context).popUntil(
+                                                  (route) => route.isFirst);
+                                              // Navigator.pushReplacement( // Use pushReplacement to avoid stacking MyHomePage
+                                              //   context,
+                                              //   MaterialPageRoute(
+                                              //       builder: (context) =>
+                                              //           const MyHomePage()),
+                                              // );
+                                            },
+                                            child: const Text(
+                                              'Done',
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  );
+                                }
+                              }
+                            }
+                          },
+                    child: const Text(
+                      'Confirm & Submit', // More descriptive text
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600, // Bolder
+                      ),
                     ),
                   ),
                 ),
-              )
-            : SizedBox(),
+                SizedBox(height: 20), // Bottom padding
+              ],
+            ),
+          ),
+        ),
+        if (_isLoading) // Conditional loading overlay
+          Container(
+            color: Colors.black.withOpacity(0.6), // Slightly darker overlay
+            child: const Center(
+              // Centered indicator
+              child: CircularProgressIndicator(
+                valueColor:
+                    AlwaysStoppedAnimation<Color>(Colors.amber), // Amber color
+              ),
+            ),
+          ),
       ]),
+    );
+  }
+}
+
+// Custom Formfield for this page to avoid conflicts if signup.dart Formfield is different
+// Or, ensure a shared Formfield from a common utility file is used across pages.
+class Formfield_confirm extends StatelessWidget {
+  final String lable;
+  double radius = 10;
+  double radiusFocus = 10;
+  Color borderColor = Colors.amber;
+  Color borderColorfocus = Colors.blueAccent;
+  TextStyle lableStyle = const TextStyle();
+  TextStyle hintStyle = const TextStyle();
+  TextStyle textStyle = const TextStyle();
+  final String hintText;
+  final TextEditingController controller;
+  final IconData? prefixIcon;
+  final TextInputType? keyboardType;
+  void Function()? onTap = () {};
+
+  Formfield_confirm(
+      {super.key,
+      required this.controller,
+      required this.hintText,
+      required this.lable,
+      this.onTap,
+      this.radiusFocus = 10,
+      this.radius = 10,
+      this.hintStyle = const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w400,
+          color: Color.fromARGB(255, 180, 180, 180)),
+      this.textStyle = const TextStyle(
+          fontSize: 15, fontWeight: FontWeight.w500, color: Colors.white),
+      this.lableStyle = const TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.w400,
+          color: Color.fromARGB(255, 220, 220, 220)),
+      this.borderColor = Colors.amber,
+      this.borderColorfocus = Colors.blueAccent,
+      this.prefixIcon,
+      this.keyboardType});
+
+  @override
+  Widget build(BuildContext context) {
+    return TextFormField(
+      onTap: onTap,
+      controller: controller,
+      style: textStyle,
+      keyboardType: keyboardType,
+      decoration: InputDecoration(
+        prefixIcon: prefixIcon != null
+            ? Icon(prefixIcon, color: borderColor.withOpacity(0.8), size: 20)
+            : null,
+        enabledBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: borderColor, width: 1.5),
+            borderRadius: BorderRadius.circular(radius)),
+        labelText: lable,
+        hintText: hintText,
+        labelStyle: lableStyle,
+        hintStyle: hintStyle,
+        floatingLabelBehavior: FloatingLabelBehavior.auto,
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: borderColorfocus, width: 2),
+          borderRadius: BorderRadius.circular(radiusFocus),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.redAccent, width: 1.5),
+          borderRadius: BorderRadius.circular(radius),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.redAccent, width: 2),
+          borderRadius: BorderRadius.circular(radiusFocus),
+        ),
+        contentPadding:
+            const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+      ),
     );
   }
 }

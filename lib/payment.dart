@@ -1,4 +1,5 @@
 // ignore_for_file:  must_be_immutable, camel_case_types, unused_local_variable, prefer_const_constructors, prefer_const_literals_to_create_immutables
+import 'package:flutter/services.dart'; // Added for Clipboard
 import 'package:treasure_game/payment_confirm.dart';
 import 'package:treasure_game/signup.dart';
 import 'package:flutter/material.dart';
@@ -22,9 +23,9 @@ class payment extends StatefulWidget {
 }
 
 class _paymentState extends State<payment> {
-  final TextEditingController _idController = TextEditingController();
+  // final TextEditingController _idController = TextEditingController(); // Not used on this page as per current UI
 
-  String paymentMethod = 'jazzcash';
+  String paymentMethod = 'jazzcash'; // Default selection
 
   @override
   void initState() {
@@ -34,37 +35,59 @@ class _paymentState extends State<payment> {
     //     'Name : ${widget.name}, User Name : ${widget.username}, Phone : ${widget.phone}, GamePass : ${widget.pass}');
   }
 
-  @override
-  void dispose() {
-    _idController.dispose();
-    super.dispose();
+  // @override
+  // void dispose() { // No controllers to dispose here unless _idController is re-added
+  //   // _idController.dispose();
+  //   super.dispose();
+  // }
+
+  Widget _buildStepIndicator({required bool isActive}) {
+    // Helper for step dots
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+      child: Container(
+        width: isActive ? 35 : 10, // Active dot is wider
+        height: 10,
+        decoration: BoxDecoration(
+          color: isActive ? Colors.amber : Colors.white.withOpacity(0.5),
+          borderRadius: BorderRadius.circular(5),
+          boxShadow: isActive
+              ? [
+                  BoxShadow(
+                      color: Colors.amber.withOpacity(0.5),
+                      blurRadius: 5,
+                      spreadRadius: 1)
+                ]
+              : [],
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
-    Color selected =
-        Color.fromARGB(255, 254, 197, 9); //fromARGB(255, 7, 243, 255)
-    Color unselected = const Color.fromARGB(0, 255, 255, 255);
+    Color selectedColor = Colors.amber;
+    Color unselectedColor = Colors.transparent; // More distinct difference
 
     return Scaffold(
-      resizeToAvoidBottomInset: false,
+      resizeToAvoidBottomInset: true,
       backgroundColor: const Color.fromARGB(255, 0, 0, 32),
-      body: SizedBox(
-        width: width,
-        height: height,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 35.0, left: 15),
-                  child: InkWell(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              // Header Row
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  InkWell(
                       onTapUp: (details) {
-                        Navigator.push(
+                        Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
                               builder: (context) => const sign_up()),
@@ -72,395 +95,296 @@ class _paymentState extends State<payment> {
                       },
                       child: const Icon(
                         Icons.arrow_back,
-                        size: 25,
+                        size: 28,
                         color: Colors.white,
                       )),
-                ),
-                Padding(
-                  padding:
-                      EdgeInsets.only(top: 35.0, left: width - width / 1.29),
-                  child: Column(
-                    children: [
-                      const Text(
-                        "Payment",
-                        style: TextStyle(
-                            fontSize: 30,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.amber),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(5),
-                            child: Container(
-                              width: 30,
-                              height: 5,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(5),
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(5.0),
-                            child: Container(
-                              width: 30,
-                              height: 5,
-                              decoration: BoxDecoration(
-                                color: Colors.amber,
-                                borderRadius: BorderRadius.circular(5),
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(5.0),
-                            child: Container(
-                              width: 30,
-                              height: 5,
-                              decoration: BoxDecoration(
-                                color: Color.fromARGB(255, 255, 255, 255),
-                                borderRadius: BorderRadius.circular(5),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(
-                  width: 75,
-                )
-              ],
-            ),
-            SizedBox(
-              height: 20,
-            ),
-            Row(
-              children: [
-                SizedBox(
-                  width: 30,
-                ),
-                Text(
-                  "Payment method",
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w500),
-                ),
-              ],
-            ),
-            SizedBox(
-              height: 10,
-            ),
-            SizedBox(
-              width: width,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  InkWell(
-                    onTap: () {
-                      setState(() {
-                        paymentMethod = 'jazzcash';
-                      });
-                    },
-                    child: Container(
-                      width: width - 60,
-                      height: 50,
-                      decoration: BoxDecoration(
-                          color: Color.fromARGB(28, 255, 255, 255),
-                          border: Border.all(color: Colors.amber, width: 1),
-                          borderRadius: BorderRadius.circular(5)),
-                      child: Row(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(left: 15, right: 15),
-                            child: Image.asset(
-                              'assets/imgs/jazzcash.png',
-                              height: 50,
-                            ),
-                          ),
-                          Text(
-                            "JazzCash",
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500),
-                          ),
-                          Padding(
-                            padding: EdgeInsets.only(left: width - 250),
-                            child: Container(
-                              width: 20,
-                              height: 20,
-                              decoration: BoxDecoration(
-                                  color: paymentMethod == 'jazzcash'
-                                      ? selected
-                                      : unselected,
-                                  border: Border.all(
-                                      color: Color.fromARGB(255, 255, 255, 255),
-                                      width: 1),
-                                  borderRadius: BorderRadius.circular(10)),
-                            ),
-                          )
-                        ],
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    height: 10,
-                  ),
-                  InkWell(
-                    onTap: () {
-                      setState(() {
-                        paymentMethod = 'easypaisa';
-                      });
-                    },
-                    child: Container(
-                      width: width - 60,
-                      height: 50,
-                      decoration: BoxDecoration(
-                          color: Color.fromARGB(28, 255, 255, 255),
-                          border: Border.all(color: Colors.amber, width: 1),
-                          borderRadius: BorderRadius.circular(5)),
-                      child: Row(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(left: 15, right: 20),
-                            child: Image.asset(
-                              'assets/imgs/easypaisaWhite.png',
-                              height: 40,
-                            ),
-                          ),
-                          Text(
-                            "Easypaisa",
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500),
-                          ),
-                          Padding(
-                            padding: EdgeInsets.only(left: width - 250),
-                            child: Container(
-                              width: 20,
-                              height: 20,
-                              decoration: BoxDecoration(
-                                  color: paymentMethod == 'easypaisa'
-                                      ? selected
-                                      : unselected,
-                                  border: Border.all(
-                                      color: Color.fromARGB(255, 255, 255, 255),
-                                      width: 1),
-                                  borderRadius: BorderRadius.circular(10)),
-                            ),
-                          )
-                        ],
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 20),
+                  Expanded(
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        const Text(
+                          "Payment",
+                          style: TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.amber),
+                        ),
+                        const SizedBox(height: 8),
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Padding(
-                              padding: const EdgeInsets.only(left: 30),
-                              child: const Text(
-                                "Send payment to.",
-                                style: TextStyle(
-                                    color: Colors.amber,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w400),
-                              ),
-                            ),
+                            _buildStepIndicator(isActive: false),
+                            _buildStepIndicator(isActive: true),
+                            _buildStepIndicator(isActive: false),
                           ],
                         ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 30, top: 15),
-                          child: Container(
-                            width: width - 60,
-                            decoration: BoxDecoration(
-                                color: Color.fromARGB(255, 0, 0, 45),
-                                borderRadius: BorderRadius.circular(5),
-                                border: Border.all(
-                                    color: Color.fromARGB(175, 161, 159, 159),
-                                    width: 1)),
-                            child: Padding(
-                              padding: const EdgeInsets.only(
-                                  left: 5, top: 15, bottom: 15, right: 8),
-                              child: Column(
-                                children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      const Text(
-                                        'Account No : ',
-                                        style: TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w400,
-                                            color: Color.fromARGB(
-                                                255, 255, 255, 255)),
-                                      ),
-                                      const Text(
-                                        '03006884579',
-                                        style: TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w400,
-                                            color: Color.fromARGB(
-                                                255, 179, 178, 168)),
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(
-                                    height: 10,
-                                  ),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      const Text(
-                                        'Receiver name : ',
-                                        style: TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w400,
-                                            color: Color.fromARGB(
-                                                255, 255, 255, 255)),
-                                      ),
-                                      const Text(
-                                        'Zain Ali',
-                                        style: TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w400,
-                                            color: Color.fromARGB(
-                                                255, 179, 168, 168)),
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(
-                                    height: 10,
-                                  ),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      const Text(
-                                        'Bank : ',
-                                        style: TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w400,
-                                            color: Color.fromARGB(
-                                                255, 255, 255, 255)),
-                                      ),
-                                      const Text(
-                                        'Jazz Cash',
-                                        style: TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w400,
-                                            color: Color.fromARGB(
-                                                255, 179, 168, 168)),
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(
-                                    height: 10,
-                                  ),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      const Text(
-                                        'Amount : ',
-                                        style: TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w400,
-                                            color: Color.fromARGB(
-                                                255, 255, 255, 255)),
-                                      ),
-                                      const Text(
-                                        'Rs.50',
-                                        style: TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w400,
-                                            color: Color.fromARGB(
-                                                255, 179, 168, 168)),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        )
                       ],
                     ),
                   ),
+                  SizedBox(width: 40), // Placeholder for balance
                 ],
               ),
-            ),
-            Expanded(
-              child: SizedBox(
-                height: double.infinity,
+              SizedBox(
+                height: 30, // Increased spacing
               ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  "If you have sent the payment then click on next.",
+              Text(
+                "Select Payment Method", // Changed title
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18, // Adjusted size
+                    fontWeight: FontWeight.w600), // Bolder
+              ),
+              SizedBox(
+                height: 15, // Increased spacing
+              ),
+              _buildPaymentMethodTile(
+                title: "JazzCash",
+                imageAsset: 'assets/imgs/jazzcash.png',
+                value: 'jazzcash',
+                groupValue: paymentMethod,
+                onChanged: (val) {
+                  setState(() {
+                    paymentMethod = val!;
+                  });
+                },
+                width: width - 48, // account for padding
+              ),
+              SizedBox(
+                height: 12,
+              ),
+              _buildPaymentMethodTile(
+                title: "Easypaisa",
+                imageAsset: 'assets/imgs/easypaisaWhite.png',
+                value: 'easypaisa',
+                groupValue: paymentMethod,
+                onChanged: (val) {
+                  setState(() {
+                    paymentMethod = val!;
+                  });
+                },
+                width: width - 48, // account for padding
+              ),
+              Padding(
+                padding: const EdgeInsets.only(
+                    top: 30, bottom: 15), // Adjusted spacing
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Payment Details", // Changed title
+                      style: TextStyle(
+                          color: Colors.amber,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600), // Bolder
+                    ),
+                    SizedBox(height: 10),
+                    Container(
+                      width: double.infinity, // Take full width available
+                      decoration: BoxDecoration(
+                          color: Color.fromARGB(
+                              255, 5, 10, 45), // Darker, distinct background
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                              color: Colors.blueGrey
+                                  .withOpacity(0.5), // Softer border
+                              width: 1)),
+                      child: Padding(
+                        padding: const EdgeInsets.all(15), // Increased padding
+                        child: Column(
+                          children: [
+                            _buildPaymentDetailRow(
+                                context: context,
+                                label: 'Account No:',
+                                value: '03006884579',
+                                canCopy: true),
+                            Divider(color: Colors.blueGrey.withOpacity(0.3)),
+                            _buildPaymentDetailRow(
+                                context: context,
+                                label: 'Receiver Name:',
+                                value: 'Zain Ali'),
+                            Divider(color: Colors.blueGrey.withOpacity(0.3)),
+                            _buildPaymentDetailRow(
+                                context: context,
+                                label: 'Bank:',
+                                value: 'Jazz Cash'),
+                            Divider(color: Colors.blueGrey.withOpacity(0.3)),
+                            _buildPaymentDetailRow(
+                                context: context,
+                                label: 'Amount:',
+                                value: 'Rs.50'),
+                          ],
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+              SizedBox(height: 30), // Spacing before note and button
+              Center(
+                child: Text(
+                  "Once payment is sent, proceed to the next step.", // Updated text
+                  textAlign: TextAlign.center,
                   style: TextStyle(
                       color: const Color.fromARGB(255, 201, 201, 201),
-                      fontSize: 12,
+                      fontSize: 13, // Slightly larger
                       fontWeight: FontWeight.w500),
                 ),
-              ],
-            ),
-            SizedBox(
-              height: 20,
-            ),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: 180,
-                    height: 50,
-                    child: ElevatedButton(
-                      style: const ButtonStyle(
-                          backgroundColor: MaterialStatePropertyAll(
-                              Color.fromARGB(255, 226, 194, 12))),
-                      onPressed: () {
-                        String username = _idController.text;
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => payment_confirm(
-                                    name: widget.name,
-                                    username: widget.username,
-                                    phone: widget.phone,
-                                    pass: widget.pass,
-                                    paymentmethod: paymentMethod,
-                                  )),
-                        );
-                      },
-                      child: const Text(
-                        'Next',
-                        style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w500,
-                            color: Color.fromARGB(255, 255, 255, 255)),
-                      ),
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              SizedBox(
+                width: double.infinity, // Full width button
+                height: 50,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.amber,
+                    foregroundColor: const Color.fromARGB(255, 0, 0, 32),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
+                    elevation: 5,
+                  ),
+                  onPressed: () async {
+                    bool internet =
+                        await InternetUtils.checkInternetConnection(context);
+                    if (!internet) return;
+
+                    // String username = _idController.text; // Not used here
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => payment_confirm(
+                                name: widget.name,
+                                username: widget.username,
+                                phone: widget.phone,
+                                pass: widget.pass,
+                                paymentmethod: paymentMethod,
+                              )),
+                    );
+                  },
+                  child: const Text(
+                    'Next',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                ],
+                ),
               ),
-            ),
-          ],
+              SizedBox(height: 20), // Bottom padding
+            ],
+          ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildPaymentMethodTile({
+    required String title,
+    required String imageAsset,
+    required String value,
+    required String groupValue,
+    required ValueChanged<String?> onChanged,
+    required double width,
+  }) {
+    bool isSelected = value == groupValue;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => onChanged(value),
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          width: width,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+              color: isSelected
+                  ? Colors.amber.withOpacity(0.15)
+                  : Color.fromARGB(28, 255, 255, 255),
+              border: Border.all(
+                  color:
+                      isSelected ? Colors.amber : Colors.grey.withOpacity(0.5),
+                  width: isSelected ? 2 : 1.5),
+              borderRadius: BorderRadius.circular(8)),
+          child: Row(
+            children: [
+              Image.asset(
+                imageAsset,
+                height: 35, // Adjusted size
+                width: 35, // Adjusted size
+                fit: BoxFit.contain,
+              ),
+              const SizedBox(width: 15),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16, // Adjusted size
+                      fontWeight: FontWeight.w500),
+                ),
+              ),
+              Theme(
+                data: ThemeData(unselectedWidgetColor: Colors.white54),
+                child: Radio<String>(
+                  value: value,
+                  groupValue: groupValue,
+                  onChanged: onChanged,
+                  activeColor: Colors.amber,
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+              )
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPaymentDetailRow(
+      {required BuildContext context,
+      required String label,
+      required String value,
+      bool canCopy = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+          vertical: 10.0), // Increased vertical padding
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+                fontSize: 14, // Adjusted size
+                fontWeight: FontWeight.w500, // Bolder
+                color: Colors.white.withOpacity(0.9)),
+          ),
+          Row(
+            children: [
+              SelectableText(
+                // Made value selectable
+                value,
+                style: TextStyle(
+                    fontSize: 14, // Adjusted size
+                    fontWeight: FontWeight.w400,
+                    color: Colors.white.withOpacity(0.7)),
+              ),
+              if (canCopy) SizedBox(width: 8),
+              if (canCopy)
+                InkWell(
+                  onTap: () {
+                    Clipboard.setData(ClipboardData(text: value));
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text('$label copied to clipboard!',
+                          style: TextStyle(color: Colors.black)),
+                      backgroundColor: Colors.amber,
+                      duration: Duration(seconds: 1),
+                    ));
+                  },
+                  child:
+                      Icon(Icons.copy_outlined, color: Colors.amber, size: 18),
+                ),
+            ],
+          ),
+        ],
       ),
     );
   }

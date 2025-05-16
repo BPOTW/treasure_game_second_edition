@@ -98,7 +98,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         Map<String, dynamic> Data = snapshot.data() as Map<String, dynamic>;
         setState(() {
           // print(Data);
-          players = Data['players'];
+          players = (Data['players']).toString();
           loot = Data['prize_money'];
           whatsapp = Data['whatsapp'];
           buy_enable = Data['buy_enable'];
@@ -107,7 +107,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
           joinedplayers = Data['joinedplayers'];
           gameEnded = Data['gameEnded'];
           gamecompleted = Data['gamecompleted'];
-          print(joinEnable);
+          print(loot);
           // if (!isGameOnline) {
           setLoggedIn(false);
           isLoggedIn();
@@ -216,6 +216,86 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     });
   }
 
+  Widget _buildInfoCard({
+    required double width,
+    required IconData icon,
+    required String title,
+    required String value,
+    required Color iconColor,
+    String? titleFontFamily,
+    TextStyle? titleTextStyle,
+    TextStyle? valueTextStyle,
+    Widget? additionalContent,
+  }) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      padding: const EdgeInsets.all(15),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: Colors.white.withOpacity(0.15)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            spreadRadius: 1,
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon,
+                  color: iconColor, size: titleFontFamily != null ? 28 : 26),
+              const SizedBox(width: 10),
+              Text(
+                title,
+                style: titleTextStyle ??
+                    TextStyle(
+                      color: primary,
+                      fontSize: titleFontFamily != null ? 25 : 20,
+                      fontFamily: titleFontFamily,
+                      fontWeight: titleFontFamily == null
+                          ? FontWeight.bold
+                          : FontWeight.normal,
+                      shadows: const [
+                        Shadow(
+                            color: Colors.black26,
+                            offset: Offset(1, 1),
+                            blurRadius: 2)
+                      ],
+                    ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: valueTextStyle ??
+                TextStyle(
+                  color: primary,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w600,
+                  shadows: const [
+                    Shadow(
+                        color: Colors.black26,
+                        offset: Offset(1, 1),
+                        blurRadius: 2)
+                  ],
+                ),
+          ),
+          if (additionalContent != null) ...[
+            const SizedBox(height: 12),
+            additionalContent,
+          ]
+        ],
+      ),
+    );
+  }
+
   void dialogBox(double width, String text, double height) {
     showDialog(
       context: context,
@@ -290,329 +370,372 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      backgroundColor: const Color.fromARGB(255, 0, 0, 32),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 60),
-            child: Row(
-              mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  "Treasure Hunt",
-                  style: TextStyle(
-                      fontSize: width / 13,
-                      letterSpacing: 2,
-                      fontFamily: 'BungeeSpice',
-                      shadows: const [
-                        Shadow(
-                            color: Color.fromARGB(255, 134, 134, 134),
-                            offset: Offset(3, 4),
-                            blurRadius: 9)
-                      ]),
-                ),
-              ],
-            ),
+      // backgroundColor: const Color.fromARGB(255, 0, 0, 32), // Removed
+      body: Container(
+        // Added for gradient
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color.fromARGB(255, 20, 5, 60), // Darker purple-blue
+              Color.fromARGB(255, 0, 0, 32), // Existing dark blue
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
-          Padding(
-            padding: const EdgeInsets.only(top: 20),
-            child: Row(
-              mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  "Game will start in",
-                  style: TextStyle(
-                      color: Colors.amber,
-                      fontSize: width / 20,
-                      fontWeight: FontWeight.w600),
-                )
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 9),
-            child: Row(
-              mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CountdownTimer(
-                  documentId: 'game_start_time',
-                  textStyle: TextStyle(
-                      color: primary,
-                      fontSize: width / 17,
-                      fontWeight: FontWeight.w600),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 15),
-            child: SizedBox(
-              height: 95,
+        ),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 60),
               child: Row(
                 mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        "Players",
-                        style: TextStyle(
-                          color: primary,
-                          fontSize: 25,
-                          fontFamily: 'BungeeSpice',
-                        ),
-                      ),
-                      Text(
-                        players.toString(),
-                        style: TextStyle(
-                            color: primary,
-                            fontSize: 23,
-                            fontWeight: FontWeight.w600),
-                      ),
-                    ],
+                  Text(
+                    "Treasure Hunt",
+                    style: TextStyle(
+                        fontSize: width / 13,
+                        letterSpacing: 2,
+                        fontFamily: 'BungeeSpice',
+                        shadows: const [
+                          Shadow(
+                              color: Color.fromARGB(255, 134, 134, 134),
+                              offset: Offset(3, 4),
+                              blurRadius: 9)
+                        ]),
                   ),
                 ],
               ),
             ),
-          ),
-          Padding(
-            padding: EdgeInsets.only(top: height < 700 ? 25 : 25),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              // mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text(
-                  "Treasure Loot",
-                  style: TextStyle(
-                      color: Color.fromARGB(255, 255, 188, 3),
-                      fontSize: 20,
-                      fontWeight: FontWeight.w500),
-                ),
-                Text(
-                  "Rs.$loot",
-                  style: const TextStyle(
-                      color: Color.fromARGB(255, 255, 255, 255),
-                      fontSize: 18,
-                      fontWeight: FontWeight.w500),
-                ),
-                Image.asset(
-                  'assets/imgs/chest.png',
-                  width: height < 700 ? 120 : 150,
-                ),
-              ],
+            Padding(
+              padding: const EdgeInsets.only(top: 20),
+              child: Row(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "Game will start in",
+                    style: TextStyle(
+                        color: Colors.amber,
+                        fontSize: width / 20,
+                        fontWeight: FontWeight.w600),
+                  )
+                ],
+              ),
             ),
-          ),
-          const Expanded(
-            child: SizedBox(),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 0),
-            child: Row(
-              mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                InkWell(
-                  onTapUp: (details) async {
-                    bool internet =
-                        await InternetUtils.checkInternetConnection(context);
-                    print(joinEnable);
-                    if (!internet) {
-                      print('No Internet');
-                    } else {
-                      isJoinedgame();
-                      if (gameEnded) {
-                        dialogBox(
-                            width, 'Dear player the game has be ended.', 60);
+            Padding(
+              padding: const EdgeInsets.only(top: 9),
+              child: Row(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CountdownTimer(
+                    documentId: 'game_start_time',
+                    textStyle: TextStyle(
+                        color: primary,
+                        fontSize: width / 17,
+                        fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+            ),
+            _buildInfoCard(
+              width: width,
+              icon: Icons.group_add_outlined,
+              title: "Players",
+              value: players.toString(),
+              iconColor: Colors.lightBlueAccent,
+              titleFontFamily: 'BungeeSpice',
+              titleTextStyle: TextStyle(
+                color: primary,
+                fontSize: 25,
+                fontFamily: 'BungeeSpice',
+                shadows: const [
+                  Shadow(
+                      color: Colors.black38,
+                      offset: Offset(2, 2),
+                      blurRadius: 3)
+                ],
+              ),
+              valueTextStyle: TextStyle(
+                color: primary,
+                fontSize: 23,
+                fontWeight: FontWeight.w600,
+                shadows: const [
+                  Shadow(
+                      color: Colors.black38,
+                      offset: Offset(1, 1),
+                      blurRadius: 2)
+                ],
+              ),
+            ),
+            _buildInfoCard(
+              width: width,
+              icon: Icons.emoji_events_outlined,
+              title: "Treasure Loot",
+              value: "Rs.$loot",
+              iconColor: Colors.amber,
+              titleTextStyle: const TextStyle(
+                color: Color.fromARGB(255, 255, 188, 3),
+                fontSize: 20,
+                fontWeight: FontWeight.w500,
+                shadows: [
+                  Shadow(
+                      color: Colors.black38,
+                      offset: Offset(1, 1),
+                      blurRadius: 2)
+                ],
+              ),
+              valueTextStyle: const TextStyle(
+                color: Color.fromARGB(255, 255, 255, 255),
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+                shadows: [
+                  Shadow(
+                      color: Colors.black38,
+                      offset: Offset(1, 1),
+                      blurRadius: 2)
+                ],
+              ),
+              additionalContent: Image.asset(
+                'assets/imgs/chest.png',
+                width: height < 700 ? 100 : 120,
+              ),
+            ),
+            const Expanded(
+              child: SizedBox(),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 0),
+              child: Row(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  InkWell(
+                    onTapUp: (details) async {
+                      bool internet =
+                          await InternetUtils.checkInternetConnection(context);
+                      print(joinEnable);
+                      if (!internet) {
+                        print('No Internet');
                       } else {
-                        if (joinEnable) {
-                          if (isLoggedInVar == true) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => dashboard_app(
-                                        gamePass: gamePass,
-                                      )),
-                            );
-                          } else {
-                            showModalBottomSheet(
-                                isScrollControlled: true,
-                                // useSafeArea: true,
-                                // anchorPoint: Offset(0, 50),
-                                // constraints: BoxConstraints(minHeight: height),
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return Container(
-                                    decoration: BoxDecoration(
-                                        color: primary,
-                                        borderRadius: const BorderRadius.only(
-                                            topLeft: Radius.circular(15),
-                                            topRight: Radius.circular(15))),
-                                    height: _isKeyboardVisible
-                                        ? (height / 1.5)
-                                        : (height / 2.2),
-                                    child: Column(
-                                      children: [
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.end,
-                                          children: [
-                                            Padding(
-                                              padding:
-                                                  const EdgeInsets.all(8.0),
-                                              child: InkWell(
-                                                  onTap: () {
-                                                    Navigator.pop(context);
-                                                    setState(() {
-                                                      window == false;
-                                                    });
-                                                  },
-                                                  child: const Icon(
-                                                    Icons.close,
-                                                    color: Colors.black,
-                                                  )),
-                                            )
-                                          ],
-                                        ),
-                                        Visibility(
-                                            visible: !_isKeyboardVisible,
-                                            child: Column(
-                                              children: [
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                          top: 0),
-                                                  child: SizedBox(
-                                                    width: (width / 4) * 3,
-                                                    child: const Text(
-                                                      "To join the game you have to buy GamePass for Rs.50.",
-                                                      style: TextStyle(
-                                                          fontSize: 11),
+                        isJoinedgame();
+                        if (gameEnded) {
+                          dialogBox(
+                              width, 'Dear player the game has be ended.', 60);
+                        } else {
+                          if (joinEnable) {
+                            if (isLoggedInVar == true) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => dashboard_app(
+                                          gamePass: gamePass,
+                                        )),
+                              );
+                            } else {
+                              showModalBottomSheet(
+                                  isScrollControlled: true,
+                                  // useSafeArea: true,
+                                  // anchorPoint: Offset(0, 50),
+                                  // constraints: BoxConstraints(minHeight: height),
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return Container(
+                                      decoration: BoxDecoration(
+                                          color: primary,
+                                          borderRadius: const BorderRadius.only(
+                                              topLeft: Radius.circular(15),
+                                              topRight: Radius.circular(15))),
+                                      height: _isKeyboardVisible
+                                          ? (height / 1.5)
+                                          : (height / 2.2),
+                                      child: Column(
+                                        children: [
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.end,
+                                            children: [
+                                              Padding(
+                                                padding:
+                                                    const EdgeInsets.all(8.0),
+                                                child: InkWell(
+                                                    onTap: () {
+                                                      Navigator.pop(context);
+                                                      setState(() {
+                                                        window == false;
+                                                      });
+                                                    },
+                                                    child: const Icon(
+                                                      Icons.close,
+                                                      color: Colors.black,
+                                                    )),
+                                              )
+                                            ],
+                                          ),
+                                          Visibility(
+                                              visible: !_isKeyboardVisible,
+                                              child: Column(
+                                                children: [
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            top: 0),
+                                                    child: SizedBox(
+                                                      width: (width / 4) * 3,
+                                                      child: const Text(
+                                                        "To join the game you have to buy GamePass for Rs.50.",
+                                                        style: TextStyle(
+                                                            fontSize: 11),
+                                                      ),
                                                     ),
                                                   ),
-                                                ),
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                          top: 15),
-                                                  child: InkWell(
-                                                    onTapUp: (details) {
-                                                      if (buy_enable) {
-                                                        Navigator.pop(context);
-                                                        Navigator.push(
-                                                          context,
-                                                          MaterialPageRoute(
-                                                              builder: (context) =>
-                                                                  const sign_up()),
-                                                        );
-                                                      }
-                                                    },
-                                                    child: Container(
-                                                      width: (width / 4) * 3.4,
-                                                      height: 50,
-                                                      decoration: BoxDecoration(
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(10),
-                                                          color: buy_enable
-                                                              ? Colors.amber
-                                                              : Colors.grey,
-                                                          border: Border.all(
-                                                              color:
-                                                                  Colors.amber,
-                                                              width: 2)),
-                                                      child: Center(
-                                                        child: SizedBox(
-                                                          width:
-                                                              (width / 4) * 2.5,
-                                                          child: Row(
-                                                            mainAxisAlignment:
-                                                                MainAxisAlignment
-                                                                    .spaceBetween,
-                                                            children: [
-                                                              Text("Buy Now",
-                                                                  style: TextStyle(
-                                                                      color:
-                                                                          primary,
-                                                                      fontSize:
-                                                                          16,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .w500)),
-                                                              CountdownTimer(
-                                                                  documentId:
-                                                                      'register_end_time',
-                                                                  textStyle: TextStyle(
-                                                                      color:
-                                                                          primary,
-                                                                      fontSize:
-                                                                          16,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .w500))
-                                                            ],
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            top: 15),
+                                                    child: InkWell(
+                                                      onTapUp: (details) {
+                                                        if (buy_enable) {
+                                                          Navigator.pop(
+                                                              context);
+                                                          Navigator.push(
+                                                            context,
+                                                            MaterialPageRoute(
+                                                                builder:
+                                                                    (context) =>
+                                                                        const sign_up()),
+                                                          );
+                                                        }
+                                                      },
+                                                      child: Container(
+                                                        width:
+                                                            (width / 4) * 3.4,
+                                                        height: 50,
+                                                        decoration: BoxDecoration(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        10),
+                                                            color: buy_enable
+                                                                ? Colors.amber
+                                                                : Colors.grey,
+                                                            border: Border.all(
+                                                                color: Colors
+                                                                    .amber,
+                                                                width: 2)),
+                                                        child: Center(
+                                                          child: SizedBox(
+                                                            width: (width / 4) *
+                                                                2.5,
+                                                            child: Row(
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .spaceBetween,
+                                                              children: [
+                                                                Text("Buy Now",
+                                                                    style: TextStyle(
+                                                                        color:
+                                                                            primary,
+                                                                        fontSize:
+                                                                            16,
+                                                                        fontWeight:
+                                                                            FontWeight.w500)),
+                                                                CountdownTimer(
+                                                                    documentId:
+                                                                        'register_end_time',
+                                                                    textStyle: TextStyle(
+                                                                        color:
+                                                                            primary,
+                                                                        fontSize:
+                                                                            16,
+                                                                        fontWeight:
+                                                                            FontWeight.w500))
+                                                              ],
+                                                            ),
                                                           ),
                                                         ),
                                                       ),
                                                     ),
                                                   ),
-                                                ),
-                                                Padding(
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            top: 15),
+                                                    child: SizedBox(
+                                                      width: (width / 4) * 3,
+                                                      child: const Text(
+                                                          "Or if you already have a GamePass then enter it below to enter in the game.",
+                                                          style: TextStyle(
+                                                            fontSize: 11,
+                                                          )),
+                                                    ),
+                                                  ),
+                                                  const SizedBox(
+                                                    height: 10,
+                                                  ),
+                                                ],
+                                              )),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              SizedBox(
+                                                width: (width / 4) * 2.4,
+                                                height: 81,
+                                                child: Padding(
                                                   padding:
                                                       const EdgeInsets.only(
-                                                          top: 15),
-                                                  child: SizedBox(
-                                                    width: (width / 4) * 3,
-                                                    child: const Text(
-                                                        "Or if you already have a GamePass then enter it below to enter in the game.",
-                                                        style: TextStyle(
+                                                          top: 10),
+                                                  child: TextFormField(
+                                                    keyboardType:
+                                                        TextInputType.text,
+                                                    autofillHints: null,
+                                                    maxLength: 10,
+                                                    controller: ticketFieldNo,
+                                                    style: const TextStyle(
+                                                      fontSize: 15,
+                                                      fontWeight:
+                                                          FontWeight.w700,
+                                                    ),
+                                                    textCapitalization:
+                                                        TextCapitalization
+                                                            .characters,
+                                                    // textAlignVertical: TextAlignVertical.center,
+                                                    decoration:
+                                                        const InputDecoration(
+                                                      enabledBorder: OutlineInputBorder(
+                                                          borderSide:
+                                                              BorderSide(
+                                                                  color: Color
+                                                                      .fromARGB(
+                                                                          255,
+                                                                          231,
+                                                                          9,
+                                                                          9)),
+                                                          borderRadius:
+                                                              BorderRadius.only(
+                                                                  topLeft: Radius
+                                                                      .circular(
+                                                                          6),
+                                                                  bottomLeft: Radius
+                                                                      .circular(
+                                                                          6))),
+                                                      labelText: "GamePass.",
+                                                      labelStyle: TextStyle(
                                                           fontSize: 11,
-                                                        )),
-                                                  ),
-                                                ),
-                                                const SizedBox(
-                                                  height: 10,
-                                                ),
-                                              ],
-                                            )),
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            SizedBox(
-                                              width: (width / 4) * 2.4,
-                                              height: 81,
-                                              child: Padding(
-                                                padding: const EdgeInsets.only(
-                                                    top: 10),
-                                                child: TextFormField(
-                                                  keyboardType:
-                                                      TextInputType.text,
-                                                  autofillHints: null,
-                                                  maxLength: 10,
-                                                  controller: ticketFieldNo,
-                                                  style: const TextStyle(
-                                                    fontSize: 15,
-                                                    fontWeight: FontWeight.w700,
-                                                  ),
-                                                  textCapitalization:
-                                                      TextCapitalization
-                                                          .characters,
-                                                  // textAlignVertical: TextAlignVertical.center,
-                                                  decoration:
-                                                      const InputDecoration(
-                                                    enabledBorder: OutlineInputBorder(
+                                                          fontWeight:
+                                                              FontWeight.w400,
+                                                          color: Color.fromARGB(
+                                                              255, 0, 0, 0)),
+                                                      focusedBorder:
+                                                          OutlineInputBorder(
                                                         borderSide: BorderSide(
-                                                            color:
-                                                                Color.fromARGB(
-                                                                    255,
-                                                                    231,
-                                                                    9,
-                                                                    9)),
+                                                            color: Color.fromARGB(
+                                                                255,
+                                                                0,
+                                                                157,
+                                                                255)), // Set the focus color here
                                                         borderRadius:
                                                             BorderRadius.only(
                                                                 topLeft: Radius
@@ -620,211 +743,199 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                                                                         6),
                                                                 bottomLeft: Radius
                                                                     .circular(
-                                                                        6))),
-                                                    labelText: "GamePass.",
-                                                    labelStyle: TextStyle(
-                                                        fontSize: 11,
-                                                        fontWeight:
-                                                            FontWeight.w400,
-                                                        color: Color.fromARGB(
-                                                            255, 0, 0, 0)),
-                                                    focusedBorder:
-                                                        OutlineInputBorder(
-                                                      borderSide: BorderSide(
-                                                          color: Color.fromARGB(
-                                                              255,
-                                                              0,
-                                                              157,
-                                                              255)), // Set the focus color here
-                                                      borderRadius:
-                                                          BorderRadius.only(
-                                                              topLeft: Radius
-                                                                  .circular(6),
-                                                              bottomLeft: Radius
-                                                                  .circular(6)),
-                                                    ),
-                                                    contentPadding:
-                                                        EdgeInsets.only(
-                                                            top: 7,
-                                                            bottom: 1,
-                                                            left: 9),
-                                                    border: OutlineInputBorder(
-                                                      borderRadius:
-                                                          BorderRadius.only(
-                                                              topLeft: Radius
-                                                                  .circular(6),
-                                                              bottomLeft: Radius
-                                                                  .circular(6)),
-                                                      // borderSide:
-                                                      //     const BorderSide(width: 5, color: Colors.white)
+                                                                        6)),
+                                                      ),
+                                                      contentPadding:
+                                                          EdgeInsets.only(
+                                                              top: 7,
+                                                              bottom: 1,
+                                                              left: 9),
+                                                      border:
+                                                          OutlineInputBorder(
+                                                        borderRadius:
+                                                            BorderRadius.only(
+                                                                topLeft: Radius
+                                                                    .circular(
+                                                                        6),
+                                                                bottomLeft: Radius
+                                                                    .circular(
+                                                                        6)),
+                                                        // borderSide:
+                                                        //     const BorderSide(width: 5, color: Colors.white)
+                                                      ),
                                                     ),
                                                   ),
                                                 ),
                                               ),
-                                            ),
-                                            Padding(
-                                              padding: const EdgeInsets.only(
-                                                  bottom: 12),
-                                              child: InkWell(
-                                                onTapUp: (details) async {
-                                                  var pass =
-                                                      await checkPassEnable(
-                                                          ticketFieldNo.text);
-
-                                                  if (pass['exists'] == true) {
-                                                    if (pass['value'] == true &&
-                                                        pass['paymentError'] ==
-                                                            false) {
-                                                      if (isGameOnline) {
-                                                        setLoggedIn(true);
-                                                        setgamepass(
+                                              Padding(
+                                                padding: const EdgeInsets.only(
+                                                    bottom: 12),
+                                                child: InkWell(
+                                                  onTapUp: (details) async {
+                                                    var pass =
+                                                        await checkPassEnable(
                                                             ticketFieldNo.text);
-                                                        isLoggedIn();
-                                                        Navigator.pop(context);
-                                                        Navigator.push(
-                                                          context,
-                                                          MaterialPageRoute(
-                                                              builder: (context) =>
-                                                                  dashboard_app(
-                                                                    gamePass:
-                                                                        ticketFieldNo
-                                                                            .text,
-                                                                  )),
-                                                        );
+
+                                                    if (pass['exists'] ==
+                                                        true) {
+                                                      if (pass['value'] ==
+                                                              true &&
+                                                          pass['paymentError'] ==
+                                                              false) {
+                                                        if (isGameOnline) {
+                                                          setLoggedIn(true);
+                                                          setgamepass(
+                                                              ticketFieldNo
+                                                                  .text);
+                                                          isLoggedIn();
+                                                          Navigator.pop(
+                                                              context);
+                                                          Navigator.push(
+                                                            context,
+                                                            MaterialPageRoute(
+                                                                builder:
+                                                                    (context) =>
+                                                                        dashboard_app(
+                                                                          gamePass:
+                                                                              ticketFieldNo.text,
+                                                                        )),
+                                                          );
+                                                        } else {
+                                                          dialogBox(
+                                                              width,
+                                                              'The game has not yet started. Be patient, it will start soon.',
+                                                              80);
+                                                        }
+                                                      } else if (pass[
+                                                              'paymentError'] ==
+                                                          true) {
+                                                        dialogBox(
+                                                            width,
+                                                            "There is some error with the payment",
+                                                            50);
                                                       } else {
                                                         dialogBox(
                                                             width,
-                                                            'The game has not yet started. Be patient, it will start soon.',
-                                                            80);
+                                                            "Your account is under payment review.",
+                                                            50);
+                                                        print(
+                                                            '${ticketFieldNo.text} Is under payment review');
                                                       }
-                                                    } else if (pass[
-                                                            'paymentError'] ==
-                                                        true) {
-                                                      dialogBox(
-                                                          width,
-                                                          "There is some error with the payment",
-                                                          50);
                                                     } else {
                                                       dialogBox(
                                                           width,
-                                                          "Your account is under payment review.",
-                                                          50);
+                                                          "No account found for ${ticketFieldNo.text}. To report any problem contact on this No. $whatsapp.",
+                                                          80);
                                                       print(
-                                                          '${ticketFieldNo.text} Is under payment review');
+                                                          '${ticketFieldNo.text} No GamePass found.');
                                                     }
-                                                  } else {
-                                                    dialogBox(
-                                                        width,
-                                                        "No account found for ${ticketFieldNo.text}. To report any problem contact on this No. $whatsapp.",
-                                                        80);
-                                                    print(
-                                                        '${ticketFieldNo.text} No GamePass found.');
-                                                  }
 
-                                                  // print(pass);
-                                                },
-                                                child: Container(
-                                                  width: 90,
-                                                  height: 48,
-                                                  decoration: const BoxDecoration(
-                                                      borderRadius:
-                                                          BorderRadius.only(
-                                                              topRight: Radius
-                                                                  .circular(6),
-                                                              bottomRight: Radius
-                                                                  .circular(6)),
-                                                      color: Color.fromARGB(
-                                                          255, 7, 255, 32),
-                                                      border: Border(
-                                                          left: BorderSide(
-                                                              color:
-                                                                  Color.fromARGB(
-                                                                      255,
-                                                                      7,
-                                                                      255,
-                                                                      32),
-                                                              width: 1))),
-                                                  child: Center(
-                                                    child: Text("Enter",
-                                                        style: TextStyle(
-                                                            color: primary,
-                                                            fontSize: 15,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .w500)),
+                                                    // print(pass);
+                                                  },
+                                                  child: Container(
+                                                    width: 90,
+                                                    height: 48,
+                                                    decoration: const BoxDecoration(
+                                                        borderRadius: BorderRadius.only(
+                                                            topRight:
+                                                                Radius.circular(
+                                                                    6),
+                                                            bottomRight:
+                                                                Radius.circular(
+                                                                    6)),
+                                                        color: Color.fromARGB(
+                                                            255, 7, 255, 32),
+                                                        border: Border(
+                                                            left: BorderSide(
+                                                                color: Color
+                                                                    .fromARGB(
+                                                                        255,
+                                                                        7,
+                                                                        255,
+                                                                        32),
+                                                                width: 1))),
+                                                    child: Center(
+                                                      child: Text("Enter",
+                                                          style: TextStyle(
+                                                              color: primary,
+                                                              fontSize: 15,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500)),
+                                                    ),
                                                   ),
                                                 ),
                                               ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                });
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  });
+                            }
+                          } else {
+                            setJoinedGame(true);
+                            dialogBox(
+                                width,
+                                'You are added to the list. You will be able to play the game when at least 1000 people join the game.',
+                                80);
                           }
-                        } else {
-                          setJoinedGame(true);
-                          dialogBox(
-                              width,
-                              'You are added to the list. You will be able to play the game when at least 1000 people join the game.',
-                              80);
                         }
                       }
-                    }
-                  },
-                  child: Container(
-                    width: height < 700 ? 210 : 250,
-                    height: height < 700 ? 50 : 60,
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        color: Colors.amber,
-                        border: Border.all(color: Colors.amber, width: 2)),
-                    child: Center(
-                      child: Text(button_text,
-                          style: TextStyle(
-                              color: primary,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w500)),
+                    },
+                    child: Container(
+                      width: height < 700 ? 210 : 250,
+                      height: height < 700 ? 50 : 60,
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          color: Colors.amber,
+                          border: Border.all(color: Colors.amber, width: 2)),
+                      child: Center(
+                        child: Text(button_text,
+                            style: TextStyle(
+                                color: primary,
+                                fontSize: 20,
+                                fontWeight: FontWeight.w500)),
+                      ),
                     ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 20),
-            child: SizedBox(
-              width: width / 1.1,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text(
-                    "For More information join our Whatsapp group.",
-                    style: TextStyle(
-                        color: primary,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600),
-                  ),
-                  const SizedBox(
-                    height: 5,
-                  ),
-                  SelectableText(
-                    whatsapp,
-                    style: TextStyle(
-                        color: secondary,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500),
                   ),
                 ],
               ),
             ),
-          ),
-          const SizedBox(
-            height: 20,
-          )
-        ],
+            Padding(
+              padding: const EdgeInsets.only(top: 20),
+              child: SizedBox(
+                width: width / 1.1,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      "For More information join our Whatsapp group.",
+                      style: TextStyle(
+                          color: primary,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(
+                      height: 5,
+                    ),
+                    SelectableText(
+                      whatsapp,
+                      style: TextStyle(
+                          color: secondary,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(
+              height: 20,
+            )
+          ],
+        ),
       ),
     );
   }

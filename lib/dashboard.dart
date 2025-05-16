@@ -131,7 +131,7 @@ class _dashboard_appState extends State<dashboard_app>
           tasksCompleted = int.parse(Data['taskscompleted']);
           username = Data['userid'];
           isLost = Data['islost'];
-          print('Have you lost $isLost');
+          // print('Have you lost $isLost');
           if (isLost) {
             dialogBox(width, 'Your answer is incorrect. You have lost.', 70);
           }
@@ -256,24 +256,22 @@ class _dashboard_appState extends State<dashboard_app>
   }
 
   void _updateText() {
-    setState(() {
-      if (textIndex <= totalIndex) {
-        setState(() {
-          continueEnable = false;
-          qrEnable = false;
-          textIndex = (textIndex + 1);
-        });
-        setindex(textIndex);
-        print(
-            'Text index is $textIndex : Total index is $totalIndex : Continue enable is $continueEnable : Qr enable is $qrEnable');
-      }
-      if (textIndex == totalIndex) {
-        setState(() {
-          continueEnable = false;
-          qrEnable = false;
-        });
-      }
-    });
+    if (textIndex <= totalIndex) {
+      print(totalIndex);
+      setState(() {
+        continueEnable = false;
+        qrEnable = false;
+        textIndex = (textIndex + 1);
+      });
+      setindex(textIndex);
+      print(
+          'Text index is $textIndex : Total index is $totalIndex : Continue enable is $continueEnable : Qr enable is $qrEnable');
+    } else if (textIndex == totalIndex) {
+      setState(() {
+        continueEnable = false;
+        qrEnable = false;
+      });
+    }
   }
 
   Future<void> _checkShowcase() async {
@@ -869,7 +867,6 @@ class _dashboard_appState extends State<dashboard_app>
           );
   }
 }
-
 // class Top_rank extends StatelessWidget {
 //   final no;
 //   final user_name;

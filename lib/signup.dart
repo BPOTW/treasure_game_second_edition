@@ -27,9 +27,6 @@ class _sign_upState extends State<sign_up> {
   String username = '';
   String phone = '';
 
-  // String usernameError = 'Phone';
-  // String phoneError = 'Phone';
-
   String phoneLable = 'Phone';
   Color borderColorPhone = Colors.amber;
   String nameLable = 'Name';
@@ -50,7 +47,6 @@ class _sign_upState extends State<sign_up> {
   Future<void> getID() async {
     String uniqueId;
     bool exists;
-    _isLoading = true;
     do {
       uniqueId = generateUniqueId();
       exists = await checkID(uniqueId);
@@ -59,7 +55,6 @@ class _sign_upState extends State<sign_up> {
       gamepassId = uniqueId;
       print(gamepassId);
     });
-    _isLoading = false;
   }
 
   String generateUniqueId() {
@@ -80,7 +75,6 @@ class _sign_upState extends State<sign_up> {
 
   Future<bool> checkID(String id) async {
     bool value = false;
-    _isLoading = true;
     DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
         .collection('MainUsersData')
         .doc(id)
@@ -90,7 +84,6 @@ class _sign_upState extends State<sign_up> {
     } else {
       value = false;
     }
-    _isLoading = false;
     return value;
   }
 
@@ -118,309 +111,329 @@ class _sign_upState extends State<sign_up> {
     double height = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      resizeToAvoidBottomInset: false,
+      resizeToAvoidBottomInset: true,
       backgroundColor: const Color.fromARGB(255, 0, 0, 32),
       body: Stack(children: [
-        SizedBox(
-          width: width,
-          height: height,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Row(
+        SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: SizedBox(
+              width: width,
+              height: height -
+                  MediaQuery.of(context).padding.top -
+                  MediaQuery.of(context).padding.bottom,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.only(top: 35.0, left: 15),
-                    child: InkWell(
-                        onTapUp: (details) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const MyHomePage()),
-                          );
-                        },
-                        child: const Icon(
-                          Icons.arrow_back,
-                          size: 25,
-                          color: Colors.white,
-                        )),
-                  ),
-                  Padding(
-                    padding:
-                        EdgeInsets.only(top: 35.0, left: width - width / 1.29),
-                    child: Column(
+                    padding: const EdgeInsets.only(top: 20.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          "Sign Up",
-                          style: TextStyle(
-                              fontSize: 30,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.amber),
+                        InkWell(
+                            onTapUp: (details) {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const MyHomePage()),
+                              );
+                            },
+                            child: const Icon(
+                              Icons.arrow_back,
+                              size: 28,
+                              color: Colors.white,
+                            )),
+                        Expanded(
+                          child: Column(
+                            children: [
+                              const Text(
+                                "Sign Up",
+                                style: TextStyle(
+                                    fontSize: 28,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.amber),
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  _buildStepIndicator(isActive: true),
+                                  _buildStepIndicator(isActive: false),
+                                  _buildStepIndicator(isActive: false),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.all(5),
-                              child: Container(
-                                width: 30,
-                                height: 5,
-                                decoration: BoxDecoration(
-                                  color: Colors.amber,
-                                  borderRadius: BorderRadius.circular(5),
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(5.0),
-                              child: Container(
-                                width: 30,
-                                height: 5,
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(5),
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(5.0),
-                              child: Container(
-                                width: 30,
-                                height: 5,
-                                decoration: BoxDecoration(
-                                  color: Color.fromARGB(255, 255, 255, 255),
-                                  borderRadius: BorderRadius.circular(5),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                        SizedBox(width: 40),
                       ],
                     ),
                   ),
-                  const SizedBox(
-                    width: 75,
-                  )
-                ],
-              ),
-              SizedBox(
-                width: (width / 4) * 3,
-                height: height / 1.3,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Formfield(
-                      controller: _nameController,
-                      borderColor: borderColorName,
-                      onTap: () {
-                        setState(() {
-                          nameLable = 'Name';
-                          borderColorName = Colors.amber;
-                        });
-                      },
-                      radius: 10,
-                      hintText: "Enter your name",
-                      lable: nameLable,
-                      lableStyle: const TextStyle(
-                          color: Color.fromARGB(255, 255, 255, 255),
-                          fontSize: 15,
-                          fontWeight: FontWeight.w400),
-                      hintStyle: const TextStyle(
-                          color: Color.fromARGB(255, 255, 255, 255),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400),
-                      textStyle: const TextStyle(
-                          color: Color.fromARGB(255, 255, 255, 255),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400),
-                    ),
-                    const SizedBox(height: 16.0),
-                    Formfield(
-                      controller: _userNameController,
-                      borderColor: borderColorUserid,
-                      onTap: () {
-                        setState(() {
-                          useridLable = 'User Name';
-                          borderColorUserid = Colors.amber;
-                        });
-                      },
-                      radius: 10,
-                      hintText: "Select your username",
-                      lable: useridLable,
-                      lableStyle: const TextStyle(
-                          color: Color.fromARGB(255, 255, 255, 255),
-                          fontSize: 15,
-                          fontWeight: FontWeight.w400),
-                      hintStyle: const TextStyle(
-                          color: Color.fromARGB(255, 255, 255, 255),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400),
-                      textStyle: const TextStyle(
-                          color: Color.fromARGB(255, 255, 255, 255),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400),
-                    ),
-                    const SizedBox(height: 16.0),
-                    //ToDo - change keyboard type to number
-                    Formfield(
-                      borderColor: borderColorPhone,
-                      onTap: () {
-                        setState(() {
-                          phoneLable = 'Phone';
-                          borderColorPhone = Colors.amber;
-                        });
-                      },
-                      radius: 10,
-                      controller: _phoneController,
-                      hintText: "Enter your phone no.",
-                      lable: phoneLable,
-                      lableStyle: const TextStyle(
-                          color: Color.fromARGB(255, 255, 255, 255),
-                          fontSize: 15,
-                          fontWeight: FontWeight.w400),
-                      hintStyle: const TextStyle(
-                          color: Color.fromARGB(255, 255, 255, 255),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400),
-                      textStyle: const TextStyle(
-                          color: Color.fromARGB(255, 255, 255, 255),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400),
-                    ),
-                    const SizedBox(height: 16.0),
-                    SizedBox(
-                      width: (width / 4) * 3,
-                      height: 50,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                  10), // Adjust the radius here
-                            ),
-                            elevation: 5, // Optional: Adjust the elevation
-                            backgroundColor: Color.fromARGB(255, 226, 194, 12)),
-                        onPressed: () async {
-                          // bool internet =
-                          //     await InternetUtils.isInternetAvailable(context);
-                          if (true) {
-                            bool isNameClear = false;
-                            bool isUsenamerClear = false;
-                            bool isPhoneClear = false;
-                            _isLoading = true;
-                            if (_nameController.text == '') {
-                              setState(() {
-                                nameLable = 'Name cannot be empty.';
-                                borderColorName = Colors.red;
-                                isNameClear = false;
-                              });
-                            } else {
-                              name = _nameController.text;
-                              isNameClear = true;
-                            }
-                            if (_userNameController.text == '') {
-                              setState(() {
-                                useridLable = 'User name cannot be empty.';
-                                borderColorUserid = Colors.red;
-                                isUsenamerClear = false;
-                              });
-                            } else {
-                              username = _userNameController.text;
-                              bool checkId = await checkKey('userid', username);
-                              if (checkId) {
-                                setState(() {
-                                  _userNameController.text = '';
-                                  useridLable = 'User name already used.';
-                                  borderColorUserid = Colors.red;
-                                  isUsenamerClear = false;
-                                });
-                              } else {
-                                setState(() {
-                                  borderColorUserid = Colors.amber;
-                                  isUsenamerClear = true;
-                                });
-                              }
-                            }
-                            if (_phoneController.text == '') {
-                              setState(() {
-                                phoneLable = 'Phone cannot be empty.';
-                                borderColorPhone = Colors.red;
-                                isPhoneClear = false;
-                              });
-                            } else {
-                              phone = _phoneController.text;
-                              bool checkPh = await checkKey('phone', phone);
-                              if (checkPh) {
-                                setState(() {
-                                  _phoneController.text = '';
-                                  phoneLable = 'Phone No. already used.';
-                                  borderColorPhone = Colors.red;
-                                  isPhoneClear = false;
-                                });
-                              } else {
-                                setState(() {
-                                  borderColorUserid = Colors.amber;
-                                  isPhoneClear = true;
-                                });
-                              }
-                            }
-                            _isLoading = false;
-                            if (isNameClear &&
-                                isUsenamerClear &&
-                                isPhoneClear) {
-                              await getID();
-                              // print(getID());
-                              // print('Ok');
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => payment(
-                                          name: name,
-                                          username: username,
-                                          phone: phone,
-                                          pass: gamepassId,
-                                        )),
-                              );
-                            }
-                          }
-                        },
-                        child: const Text(
-                          'Next',
-                          style: TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.w500,
-                              color: Color.fromARGB(255, 255, 255, 255)),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Formfield(
+                          controller: _nameController,
+                          borderColor: borderColorName,
+                          prefixIcon: Icons.person_outline,
+                          keyboardType: TextInputType.name,
+                          onTap: () {
+                            setState(() {
+                              nameLable = 'Name';
+                              borderColorName = Colors.amber;
+                            });
+                          },
+                          radius: 10,
+                          hintText: "Enter your full name",
+                          lable: nameLable,
+                          lableStyle: const TextStyle(
+                              color: Color.fromARGB(255, 220, 220, 220),
+                              fontSize: 15,
+                              fontWeight: FontWeight.w400),
+                          hintStyle: const TextStyle(
+                              color: Color.fromARGB(255, 180, 180, 180),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w400),
+                          textStyle: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500),
                         ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        _isLoading
-            ? Container(
-                color: Colors.black
-                    .withOpacity(0.5), // Semi-transparent background
-                child: Center(
-                  child: Container(
-                    width: 50,
-                    height: 50,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: const Color.fromARGB(0, 255, 255, 255),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: CircularProgressIndicator(
-                      color: Colors.amber,
+                        const SizedBox(height: 20.0),
+                        Formfield(
+                          controller: _userNameController,
+                          borderColor: borderColorUserid,
+                          prefixIcon: Icons.account_circle_outlined,
+                          keyboardType: TextInputType.text,
+                          onTap: () {
+                            setState(() {
+                              useridLable = 'User Name';
+                              borderColorUserid = Colors.amber;
+                            });
+                          },
+                          radius: 10,
+                          hintText: "Choose a unique username",
+                          lable: useridLable,
+                          lableStyle: const TextStyle(
+                              color: Color.fromARGB(255, 220, 220, 220),
+                              fontSize: 15,
+                              fontWeight: FontWeight.w400),
+                          hintStyle: const TextStyle(
+                              color: Color.fromARGB(255, 180, 180, 180),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w400),
+                          textStyle: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500),
+                        ),
+                        const SizedBox(height: 20.0),
+                        Formfield(
+                          borderColor: borderColorPhone,
+                          prefixIcon: Icons.phone_outlined,
+                          keyboardType: TextInputType.phone,
+                          onTap: () {
+                            setState(() {
+                              phoneLable = 'Phone';
+                              borderColorPhone = Colors.amber;
+                            });
+                          },
+                          radius: 10,
+                          controller: _phoneController,
+                          hintText: "Enter your phone number",
+                          lable: phoneLable,
+                          lableStyle: const TextStyle(
+                              color: Color.fromARGB(255, 220, 220, 220),
+                              fontSize: 15,
+                              fontWeight: FontWeight.w400),
+                          hintStyle: const TextStyle(
+                              color: Color.fromARGB(255, 180, 180, 180),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w400),
+                          textStyle: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500),
+                        ),
+                        const SizedBox(height: 30.0),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 50,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                elevation: 5,
+                                backgroundColor: Colors.amber,
+                                foregroundColor:
+                                    const Color.fromARGB(255, 0, 0, 32)),
+                            onPressed: _isLoading
+                                ? null
+                                : () async {
+                                    bool internet = await InternetUtils
+                                        .checkInternetConnection(context);
+                                    if (!internet) {
+                                      return;
+                                    }
+
+                                    setState(() {
+                                      _isLoading = true;
+                                    });
+
+                                    bool isNameClear = false;
+                                    bool isUsenamerClear = false;
+                                    bool isPhoneClear = false;
+
+                                    if (_nameController.text.trim().isEmpty) {
+                                      setState(() {
+                                        nameLable = 'Name cannot be empty.';
+                                        borderColorName = Colors.red;
+                                      });
+                                    } else {
+                                      name = _nameController.text.trim();
+                                      setState(() {
+                                        borderColorName = Colors.amber;
+                                      });
+                                      isNameClear = true;
+                                    }
+
+                                    if (_userNameController.text
+                                        .trim()
+                                        .isEmpty) {
+                                      setState(() {
+                                        useridLable =
+                                            'User name cannot be empty.';
+                                        borderColorUserid = Colors.red;
+                                      });
+                                    } else {
+                                      username =
+                                          _userNameController.text.trim();
+                                      bool checkId =
+                                          await checkKey('userid', username);
+                                      if (checkId) {
+                                        setState(() {
+                                          _userNameController.text = '';
+                                          useridLable =
+                                              'User name already used.';
+                                          borderColorUserid = Colors.red;
+                                        });
+                                      } else {
+                                        setState(() {
+                                          borderColorUserid = Colors.amber;
+                                          isUsenamerClear = true;
+                                        });
+                                      }
+                                    }
+
+                                    if (_phoneController.text.trim().isEmpty) {
+                                      setState(() {
+                                        phoneLable = 'Phone cannot be empty.';
+                                        borderColorPhone = Colors.red;
+                                      });
+                                    } else if (!RegExp(r'^[0-9]{10,15}$')
+                                        .hasMatch(
+                                            _phoneController.text.trim())) {
+                                      setState(() {
+                                        phoneLable =
+                                            'Enter a valid phone number.';
+                                        borderColorPhone = Colors.red;
+                                      });
+                                    } else {
+                                      phone = _phoneController.text.trim();
+                                      bool checkPh =
+                                          await checkKey('phone', phone);
+                                      if (checkPh) {
+                                        setState(() {
+                                          _phoneController.text = '';
+                                          phoneLable =
+                                              'Phone No. already used.';
+                                          borderColorPhone = Colors.red;
+                                        });
+                                      } else {
+                                        setState(() {
+                                          borderColorPhone = Colors.amber;
+                                          isPhoneClear = true;
+                                        });
+                                      }
+                                    }
+
+                                    if (isNameClear &&
+                                        isUsenamerClear &&
+                                        isPhoneClear) {
+                                      await getID();
+                                      if (mounted) {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) => payment(
+                                                    name: name,
+                                                    username: username,
+                                                    phone: phone,
+                                                    pass: gamepassId,
+                                                  )),
+                                        );
+                                      }
+                                    }
+                                    if (mounted) {
+                                      setState(() {
+                                        _isLoading = false;
+                                      });
+                                    }
+                                  },
+                            child: const Text(
+                              'Next',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                      ],
                     ),
                   ),
-                ),
-              )
-            : SizedBox(),
+                ],
+              ),
+            ),
+          ),
+        ),
+        if (_isLoading)
+          Container(
+            color: Colors.black.withOpacity(0.6),
+            child: const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.amber),
+              ),
+            ),
+          ),
       ]),
+    );
+  }
+
+  Widget _buildStepIndicator({required bool isActive}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+      child: Container(
+        width: isActive ? 35 : 10,
+        height: 10,
+        decoration: BoxDecoration(
+          color: isActive ? Colors.amber : Colors.white.withOpacity(0.5),
+          borderRadius: BorderRadius.circular(5),
+          boxShadow: isActive
+              ? [
+                  BoxShadow(
+                      color: Colors.amber.withOpacity(0.5),
+                      blurRadius: 5,
+                      spreadRadius: 1)
+                ]
+              : [],
+        ),
+      ),
     );
   }
 }
@@ -444,6 +457,9 @@ class Formfield extends StatelessWidget {
   TextStyle textStyle = const TextStyle();
   final String hintText;
   final TextEditingController controller;
+  final IconData? prefixIcon;
+  final TextInputType? keyboardType;
+
   Formfield(
       {super.key,
       required this.controller,
@@ -451,18 +467,24 @@ class Formfield extends StatelessWidget {
       required this.lable,
       this.validator,
       this.onTap,
-      this.radiusFocus = 6,
+      this.radiusFocus = 10,
       this.capitalText = TextCapitalization.none,
-      this.radius = 20,
+      this.radius = 10,
       this.hintStyle = const TextStyle(
-          fontSize: 17, fontWeight: FontWeight.w400, color: Colors.white),
+          fontSize: 14,
+          fontWeight: FontWeight.w400,
+          color: Color.fromARGB(255, 180, 180, 180)),
       this.textStyle = const TextStyle(
-          fontSize: 17, fontWeight: FontWeight.w400, color: Colors.white),
+          fontSize: 15, fontWeight: FontWeight.w500, color: Colors.white),
       this.lableStyle = const TextStyle(
-          fontSize: 17, fontWeight: FontWeight.w400, color: Colors.white),
+          fontSize: 15,
+          fontWeight: FontWeight.w400,
+          color: Color.fromARGB(255, 220, 220, 220)),
       this.borderColor = Colors.amber,
-      this.borderColorfocus = Colors.amber,
-      this.textColor = Colors.white});
+      this.borderColorfocus = Colors.blueAccent,
+      this.textColor = Colors.white,
+      this.prefixIcon,
+      this.keyboardType});
 
   @override
   Widget build(BuildContext context) {
@@ -472,27 +494,33 @@ class Formfield extends StatelessWidget {
       controller: controller,
       style: textStyle,
       textCapitalization: capitalText,
-      // textAlignVertical: TextAlignVertical.center,
+      keyboardType: keyboardType,
       decoration: InputDecoration(
+        prefixIcon: prefixIcon != null
+            ? Icon(prefixIcon, color: borderColor, size: 20)
+            : null,
         enabledBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: borderColor),
+            borderSide: BorderSide(color: borderColor, width: 1.5),
             borderRadius: BorderRadius.circular(radius)),
         labelText: lable,
         hintText: hintText,
         labelStyle: lableStyle,
         hintStyle: hintStyle,
+        floatingLabelBehavior: FloatingLabelBehavior.auto,
         focusedBorder: OutlineInputBorder(
-          borderSide:
-              BorderSide(color: borderColorfocus), // Set the focus color here
+          borderSide: BorderSide(color: borderColorfocus, width: 2),
           borderRadius: BorderRadius.circular(radiusFocus),
         ),
-        contentPadding: const EdgeInsets.only(top: 7, bottom: 1, left: 21),
-        // border: OutlineInputBorder(
-        //   borderRadius: BorderRadius.only(
-        //       topLeft: Radius.circular(6), bottomLeft: Radius.circular(6)),
-        //   // borderSide:
-        //   //     const BorderSide(width: 5, color: Colors.white)
-        // ),
+        errorBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.redAccent, width: 1.5),
+          borderRadius: BorderRadius.circular(radius),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.redAccent, width: 2),
+          borderRadius: BorderRadius.circular(radiusFocus),
+        ),
+        contentPadding:
+            const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
       ),
     );
   }
